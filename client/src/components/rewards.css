@@ -1,0 +1,67 @@
+.rewards-card { max-width: 56rem; margin: 0 auto; text-align: center; }
+.points-counter { font-size: 4.5rem; font-weight: 800; color: var(--green-600); margin: 1rem 0; line-height: 1; }
+
+/* Progress bar (original .progress-bar-container / .progress-bar) */
+.progress-bar-container {
+  background: var(--gray-200);
+  border-radius: 9999px;
+  height: 1.5rem;
+  max-width: 28rem;
+  margin: 0 auto;
+  overflow: hidden;
+}
+.progress-bar {
+  background: var(--green-500);
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 1.5s ease-in-out;
+}
+
+.rewards-tabs-wrap { margin-top: 2.5rem; border-top: 1px solid var(--gray-200); padding-top: 1.5rem; }
+.rewards-tabs {
+  display: flex;
+  justify-content: center;
+  border-bottom: 2px solid var(--gray-200);
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+}
+.reward-tab-btn {
+  background: none;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-bottom: 3px solid transparent;
+  color: var(--gray-500);
+  font-weight: 500;
+  transition: all 0.3s ease;
+  margin-bottom: -2px;
+  white-space: nowrap;
+}
+.reward-tab-btn.active-tab { color: var(--green-600); border-bottom-color: var(--green-600); }
+
+.tiers { text-align: left; gap: 1rem; }
+.tier-card { border: 1px solid var(--gray-200); background: var(--gray-50); border-radius: var(--radius); padding: 1rem; transition: background-color 0.3s; }
+.tier-card.unlocked { border-color: var(--green-500); background: var(--green-50); }
+.tier-head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+.tier-head i { font-size: 1.5rem; color: var(--gray-400); }
+.tier-card.unlocked .tier-head i { color: var(--green-600); }
+.tier-head h4 { font-weight: 700; }
+.tier-reward { margin: 0.75rem 0; min-height: 2.5rem; }
+.mini-track { width: 100%; background: var(--gray-200); border-radius: 9999px; height: 0.625rem; }
+.mini-fill { background: var(--green-500); height: 100%; border-radius: 9999px; transition: width 0.6s; }
+
+.leaderboard, .history { list-style: none; padding: 0; margin: 0 auto; max-width: 28rem; text-align: left; display: flex; flex-direction: column; }
+.leaderboard { gap: 0.75rem; }
+.leaderboard li { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border-radius: var(--radius); background: var(--gray-50); }
+.leaderboard li.you { background: var(--green-100); box-shadow: 0 0 0 2px var(--green-300); }
+.leaderboard li.you .lb-name { font-weight: 700; color: var(--green-700); }
+.rank { font-weight: 700; width: 3rem; text-align: center; white-space: nowrap; }
+.rank i { margin-left: 0.25rem; }
+.rank .gold { color: #facc15; }
+.rank .silver { color: var(--gray-400); }
+.rank .bronze { color: var(--yellow-600); }
+.lb-name { flex: 1; }
+
+.history { gap: 0.5rem; }
+.history li { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: var(--gray-50); border-radius: 0.375rem; }
+.history li:hover { background: var(--gray-100); }
+.neg { color: var(--red-500); }

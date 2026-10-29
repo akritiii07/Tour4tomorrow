@@ -1,0 +1,25 @@
+/* Login / register pages look like the original login modal, centred on a
+   softly darkened version of the hero photo. */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--header-h) + 2rem) 1rem 3rem;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)),
+    url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2070&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+}
+.auth-card {
+  background: #fff;
+  padding: 2rem;
+  border-radius: var(--radius);
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+}
+.auth-title { font-size: 1.5rem; font-weight: 700; color: var(--gray-800); margin-bottom: 0.5rem; }
+.auth-form { display: flex; flex-direction: column; gap: 1rem; text-align: left; }
+.auth-form .btn { margin-top: 0.5rem; }
