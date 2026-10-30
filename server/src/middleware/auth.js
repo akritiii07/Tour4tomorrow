@@ -9,11 +9,16 @@ export const AUTH_COOKIE = 't4t_token';
 //   JavaScript running in the page (including injected malicious scripts)
 //   CANNOT read an httpOnly cookie, so an XSS bug can't steal the token.
 //   sameSite='lax' stops other websites from sending it in background requests.
+//
+// Default is 'lax', which is correct when the React app and API share ONE domain
+// (local dev with the Vite proxy, or a single Vercel project). Set
+// COOKIE_SAMESITE=none only if you host the API on a different domain.
 export function cookieOptions() {
+  const sameSite = config.cookieSameSite;
   return {
     httpOnly: true,
-    secure: config.isProduction, // HTTPS only in production
-    sameSite: config.isProduction ? 'none' : 'lax', // 'none' needed if client & API are on different domains
+    secure: config.isProduction || sameSite === 'none', // HTTPS only (browsers require it for 'none')
+    sameSite,
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: '/',
   };

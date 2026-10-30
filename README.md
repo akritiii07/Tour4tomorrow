@@ -6,6 +6,9 @@ and a real AI travel assistant.
 
 ```
 tour4tomorrow/
+├── vercel.json             Vercel deployment config (see section 5b)
+├── package.json            Root file for Vercel (Node 22, ES modules)
+├── api/index.js            Vercel serverless entry → server/src/vercel.js
 ├── client/                 React 19 + Vite + plain CSS
 │   ├── index.html          Loads Inter font + Font Awesome (same as the original)
 │   ├── vite.config.js      Proxies /api → http://localhost:5000 in development
@@ -19,7 +22,8 @@ tour4tomorrow/
 │       └── styles/global.css       Colour variables + shared styles
 └── server/                 Express 5 + Mongoose 8
     ├── src/
-    │   ├── server.js               Starts everything (config → DB → listen)
+    │   ├── server.js               Local: starts everything (config → DB → listen)
+    │   ├── vercel.js               Vercel: same app as a serverless function
     │   ├── app.js                  Express app: security, CORS, JSON, routes, errors
     │   ├── config/                 env.js, db.js, emissionFactors.js
     │   ├── data/catalog.js         Reward tiers, stay styles, simulated ride fleet
@@ -114,6 +118,48 @@ and the leaderboard, and — **if an AI key is set** — sends one real message 
 Production build of the frontend: `cd client && npm run build` (output in `client/dist/`).
 
 ---
+
+## 5b. Deploy to Vercel (frontend + API in ONE project)
+
+How it works: Vercel serves the built React app from its CDN, and every `/api/*` request runs
+`api/index.js` → `server/src/vercel.js` as a serverless function (the same Express app as local).
+Both share one domain, so the login cookie works without CORS tricks.
+
+| File | Purpose |
+|---|---|
+| `vercel.json` | Install + build commands, output folder `client/dist`, `/api/*` → function, everything else → `index.html` (so `/dashboard` refresh works), 60s function timeout |
+| `package.json` (root) | Tells Vercel to use Node 22 and ES modules |
+| `api/index.js` | The serverless function entry (re-exports `server/src/vercel.js`) |
+| `server/src/vercel.js` | Connects to MongoDB (reused between requests) then runs the Express app |
+
+Steps:
+1. **Atlas → Network Access → Add IP → `0.0.0.0/0`.** Vercel has no fixed IP address, so Atlas must accept all IPs. Your password still protects the database.
+2. Push the project to GitHub (check `git status` does **not** list `server/.env`).
+3. Vercel → **Add New → Project** → import the repo.
+   - **Root Directory: leave as the repo root** (NOT `client`, or the API won't deploy).
+   - Framework Preset: **Other** (`vercel.json` supplies the commands).
+4. Add **Environment Variables** (Production + Preview):
+   `MONGODB_URI`, `JWT_SECRET`, `AI_PROVIDER`, `GEMINI_API_KEY` (or `ANTHROPIC_API_KEY`), optional `ORS_API_KEY`,
+   `NOMINATIM_USER_AGENT`. Leave `NODE_ENV`/`PORT` out — Vercel handles them. Do **not** set `VITE_API_URL`.
+5. Deploy, then open `https://<your-app>.vercel.app/api/health` → should show `{"status":"ok"}`.
+6. Set `CLIENT_ORIGIN=https://<your-app>.vercel.app` and redeploy.
+
+Verified locally with the official `vercel build` (Vercel CLI 65.8): build succeeds, the function bundles all server
+packages (~11 MB, Node 22, 60s max duration), and requests through Vercel's Node wrapper return correct JSON,
+including clear 503 errors when env vars or the database are missing.
+
+Serverless limitations to know:
+- Rate limits and caches are kept **per function instance** in memory, so they're softer than on a single server.
+- First request after idle may take a few seconds (cold start + MongoDB connection).
+- If you change env vars, you must **redeploy** for them to apply.
+
+| Vercel symptom | Fix |
+|---|---|
+| `/api/...` returns 503 "missing MONGODB_URI or JWT_SECRET" | Add the env vars, then Redeploy |
+| 503 "Could not connect to the database" | Atlas Network Access `0.0.0.0/0`; check the URI password |
+| 404 on `/api/...` | Root Directory was set to `client` — change it to the repo root |
+| 504 timeout on Plan Trip | Map services were slow; try again (limit is 60s in `vercel.json`) |
+| Logged out after refresh | You set `VITE_API_URL` to another domain — remove it |
 
 ## 6. What's real, what's estimated, what's simulated
 
@@ -234,12 +280,11 @@ Honesty was a design rule: the UI labels every number that isn't real.
 | "model was not found" | Change `GEMINI_MODEL` / `ANTHROPIC_MODEL` to a current model name |
 | "We couldn't find …" | Add state/country, e.g. "Pachmarhi, Madhya Pradesh" |
 | "Nearby stays are unavailable" | Overpass is busy — the rest of the plan still works; try again later |
-| Logged out right after login in production | Client and API on different domains need HTTPS + `sameSite: 'none'` (already set when `NODE_ENV=production`) and `CLIENT_ORIGIN` set to your frontend URL |
+| Logged out right after login in production | Deploy client + API on one domain (section 5b). Only if they're on different domains: set `COOKIE_SAMESITE=none`, `CLIENT_ORIGIN` to the frontend URL, and `VITE_API_URL` on the client |
 
 ## 12. Ideas for next steps
 
 - Email verification & password reset
-- Deploy: API on Render/Railway, client on Vercel/Netlify (set `VITE_API_URL` and `CLIENT_ORIGIN`)
 - Let the chatbot call `/api/trips/plan` as a *tool* so it can plan trips directly
 - Replace estimated factors with a carbon API such as Climatiq (paid tiers)
 - Train timetables via an Indian Railways data provider

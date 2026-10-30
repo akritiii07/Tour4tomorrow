@@ -12,8 +12,8 @@ import { errorHandler, notFound } from './middleware/errorHandler.js';
 export function createApp() {
   const app = express();
 
-  // Needed for correct client IPs (rate limiting) behind Render/Railway/etc.
-  if (config.isProduction) app.set('trust proxy', 1);
+  // Needed for correct client IPs (rate limiting) behind Vercel/Render/Railway.
+  if (config.isProduction || config.isVercel) app.set('trust proxy', 1);
 
   app.use(helmet()); // sensible security headers
   app.use(

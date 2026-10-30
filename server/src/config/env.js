@@ -15,6 +15,11 @@ export const config = {
 
   jwtSecret: process.env.JWT_SECRET || (isTest ? 'test-secret-only-for-tests' : undefined),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  cookieSameSite: ['lax', 'strict', 'none'].includes(process.env.COOKIE_SAMESITE)
+    ? process.env.COOKIE_SAMESITE
+    : 'lax',
+  // Vercel sets VERCEL=1 automatically on its servers.
+  isVercel: Boolean(process.env.VERCEL),
 
   ai: {
     provider: (process.env.AI_PROVIDER || 'gemini').toLowerCase(),
